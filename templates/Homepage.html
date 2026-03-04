@@ -1,0 +1,327 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoDrive Admin Dashboard</title>
+
+    <!-- Tailwind -->
+    <link rel="stylesheet" href="{% static 'dist/output.css' %}" />
+
+    <!-- Font Awesome Icons -->
+    <script
+      src="https://kit.fontawesome.com/414b0df42d.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Google Fonts - Audiowide -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Custom font class for Audiowide */
+      .font-audiowide {
+        font-family: "Audiowide", sans-serif;
+      }
+
+      /* Sidebar animation styles */
+      .sidebar {
+        transition: transform 0.3s ease-in-out;
+      }
+      .sidebar-open {
+        transform: translateX(0);
+      }
+      .sidebar-closed {
+        transform: translateX(-100%);
+      }
+    </style>
+  </head>
+
+  <body class="flex flex-col min-h-screen overflow-x-hidden bg-gray-100">
+    <!-- ========== SIDEBAR ========== -->
+    <aside
+      id="sidebar"
+      class="fixed top-0 left-0 z-50 w-64 h-full bg-blue-700 shadow-2xl sidebar sidebar-closed"
+    >
+      <div class="flex flex-col h-full">
+        <!-- Sidebar Header -->
+        <div
+          class="flex items-center justify-between p-4 border-b border-blue-600"
+        >
+          <h2 class="text-xl font-bold text-white font-audiowide">
+            Admin Dashboard
+          </h2>
+          <button id="closeSidebar" class="text-white hover:text-gray-200">
+            ✕
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation Links -->
+        <nav class="flex-1 p-4 overflow-y-auto">
+          <ul class="space-y-2">
+            <!-- Home Link (Active) -->
+            <li>
+              <a
+                href="{% url 'Homepage' %}"
+                class="flex items-center p-3 text-lg font-bold text-yellow-200 transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-home"></i> Home
+              </a>
+            </li>
+
+            <!-- Loans Link -->
+            <li>
+              <a
+                href="{% url 'Adminloanslist' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-hand-holding-usd"></i> Loans
+              </a>
+            </li>
+
+            <!-- Payments Link -->
+            <li>
+              <a
+                href="{% url 'Adminpayment' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-credit-card"></i> Payments
+              </a>
+            </li>
+
+            <!-- Borrowers Link -->
+            <li>
+              <a
+                href="{% url 'Adminborrower' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-users"></i> Borrowers
+              </a>
+            </li>
+
+            <!-- Ebike Models Link -->
+            <li>
+              <a
+                href="{% url 'AdminEbike' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-bicycle"></i> Ebike Models
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+
+        <!-- Sidebar Footer - Logout -->
+        <div class="p-4 border-t border-blue-600">
+          <a
+            href="{% url 'index' %}"
+            class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+          >
+            <i class="mr-3 fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div
+      id="overlay"
+      class="fixed inset-0 z-40 hidden bg-black bg-opacity-40"
+      style="display: none"
+    ></div>
+
+    <!-- ========== HEADER ========== -->
+    <header
+      class="w-full px-4 py-3 text-white bg-blue-600 shadow-lg font-audiowide"
+    >
+      <div class="flex items-center">
+        <!-- Hamburger Menu Button -->
+        <button id="hamburger" class="text-2xl text-white hover:text-gray-300">
+          ☰
+        </button>
+
+        <!-- Logo -->
+        <img
+          src="{% static 'images/logo.png' %}"
+          onerror="
+            this.style.display = 'none';
+            this.nextElementSibling.style.display = 'block';
+          "
+          class="h-8 ml-3"
+        />
+        <!-- Fallback text if logo fails to load -->
+        <span class="hidden ml-2 text-xl font-bold">ECODRIVE</span>
+
+        <!-- User Profile Icon -->
+        <i
+          class="ml-auto text-2xl cursor-pointer fas fa-user-circle hover:text-gray-300"
+        ></i>
+      </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="px-6 py-6">
+      <h1 class="text-2xl font-bold text-gray-700">Dashboard</h1>
+
+      <!-- ========== DASHBOARD CARDS ========== -->
+      <div
+        class="grid gap-6 mt-6 max-w-[1800px] 2xl:max-w-[2200px] mx-auto sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-6"
+      >
+        <!-- Card: Active Loans -->
+        <div
+          class="flex flex-col justify-between p-5 2xl:p-6 bg-white border-l-4 border-blue-500 shadow rounded-xl"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-blue-600">Active Loans</h3>
+            <i class="text-2xl text-blue-500 fas fa-book"></i>
+          </div>
+          <p class="mt-4 text-3xl 2xl:text-4xl font-bold text-gray-700">{{ active_loans_count }}</p>
+          <a
+            href="{% url 'Adminloanslist' %}?tab=active"
+            class="flex items-center justify-end mt-4 text-sm font-semibold text-blue-600 hover:underline"
+          >
+            View Loan List <i class="ml-2 fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Card: Borrowers -->
+        <div
+          class="flex flex-col justify-between p-5 2xl:p-6 bg-white border-l-4 shadow rounded-xl border-cyan-400"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-cyan-500">Borrowers</h3>
+            <i class="text-2xl fas fa-users text-cyan-400"></i>
+          </div>
+          <p class="mt-4 text-3xl 2xl:text-4xl font-bold text-gray-700">{{ borrowers_count }}</p>
+          <a
+            href="{% url 'Adminborrower' %}"
+            class="flex items-center justify-end mt-4 text-sm font-semibold text-cyan-500 hover:underline"
+          >
+            View Borrower List <i class="ml-2 fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Card: Monthly Releases -->
+        <div
+          class="flex flex-col justify-between p-5 2xl:p-6 bg-white border-l-4 border-purple-500 shadow rounded-xl"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-purple-600">Monthly Releases</h3>
+            <i class="text-2xl text-purple-500 fas fa-calendar-check"></i>
+          </div>
+          <p class="mt-4 text-3xl 2xl:text-4xl font-bold text-gray-700">
+            ₱ {{ monthly_releases_total|floatformat:2 }}
+          </p>
+          <p class="mt-1 text-xs font-semibold text-gray-500">{{ current_month }}</p>
+          <a
+            href="{% url 'Adminloanslist' %}#monthly-releases"
+            class="flex items-center justify-end mt-4 text-sm font-semibold text-purple-600 hover:underline"
+          >
+            View Details <i class="ml-2 fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Card: Monthly Collections -->
+        <div
+          class="flex flex-col justify-between p-5 2xl:p-6 bg-white border-l-4 border-teal-500 shadow rounded-xl"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-teal-600">Monthly Collections</h3>
+            <i class="text-2xl text-teal-500 fas fa-hand-holding-usd"></i>
+          </div>
+          <p class="mt-4 text-3xl 2xl:text-4xl font-bold text-gray-700">
+            ₱ {{ monthly_collections_total|floatformat:2 }}
+          </p>
+          <p class="mt-1 text-xs font-semibold text-gray-500">{{ current_month }}</p>
+          <a
+            href="{% url 'Adminloanslist' %}#monthly-collections"
+            class="flex items-center justify-end mt-4 text-sm font-semibold text-teal-600 hover:underline"
+          >
+            View Details <i class="ml-2 fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Card: Overdue Loans -->
+        <div
+          class="flex flex-col justify-between p-5 2xl:p-6 bg-white border-l-4 border-red-500 shadow rounded-xl"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-red-600">Overdue Loans</h3>
+            <i class="text-2xl text-red-500 fas fa-exclamation-triangle"></i>
+          </div>
+          <p class="mt-4 text-3xl 2xl:text-4xl font-bold text-gray-700">{{ overdue_loans_count }}</p>
+          <p class="mt-1 text-xs font-semibold text-gray-500">
+            Requires attention
+          </p>
+          <a
+            href="{% url 'Adminloanslist' %}#overdue"
+            class="flex items-center justify-end mt-4 text-sm font-semibold text-red-600 hover:underline"
+          >
+            View Overdue <i class="ml-2 fas fa-arrow-right"></i>
+          </a>
+        </div>
+        <!-- Card: Completed Loans (NEW) -->
+        <div
+          class="flex flex-col justify-between p-5 2xl:p-6 bg-white border-l-4 shadow border-emerald-500 rounded-xl"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-emerald-600">Completed Loans</h3>
+            <i class="text-2xl text-emerald-500 fas fa-check-circle"></i>
+          </div>
+          <p class="mt-4 text-3xl 2xl:text-4xl font-bold text-gray-700">{{ completed_loans_count }}</p>
+          <p class="mt-1 text-xs font-semibold text-gray-500">
+            Total: ₱{{ completed_loans_total|floatformat:2 }}
+          </p>
+          <a
+            href="{% url 'Adminloanslist' %}#completed"
+            class="flex items-center justify-end mt-4 text-sm font-semibold text-emerald-600 hover:underline"
+          >
+            View Completed <i class="ml-2 fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <script>
+      // ========== SIDEBAR FUNCTIONALITY ==========
+
+      // Get sidebar elements
+      const hamburger = document.getElementById("hamburger");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("overlay");
+      const closeSidebar = document.getElementById("closeSidebar");
+
+      // Function to open sidebar
+      function openSidebar() {
+        sidebar.classList.remove("sidebar-closed");
+        sidebar.classList.add("sidebar-open");
+        overlay.classList.remove("hidden");
+        document.body.style.overflow = "hidden"; // Prevent background scrolling
+      }
+
+      // Function to close sidebar
+      function closeSidebarFunc() {
+        sidebar.classList.add("sidebar-closed");
+        sidebar.classList.remove("sidebar-open");
+        overlay.classList.add("hidden");
+        document.body.style.overflow = ""; // Restore scrolling
+      }
+
+      // Event listeners for sidebar
+      hamburger.addEventListener("click", openSidebar);
+      closeSidebar.addEventListener("click", closeSidebarFunc);
+      overlay.addEventListener("click", closeSidebarFunc);
+
+      // Close sidebar with Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSidebarFunc();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,664 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoDrive Admin Payment</title>
+    <link rel="stylesheet" href="{% static 'dist/output.css' %}">
+    <script
+      src="https://kit.fontawesome.com/414b0df42d.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .font-audiowide {
+        font-family: "Audiowide", sans-serif;
+      }
+      .sidebar {
+        transition: transform 0.3s ease-in-out;
+      }
+      .sidebar-open {
+        transform: translateX(0);
+      }
+      .sidebar-closed {
+        transform: translateX(-100%);
+      }
+      
+      /* Modern Table Styling */
+      .modern-table {
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      
+      .modern-table thead th {
+        background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #475569;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      
+      .modern-table tbody tr {
+        transition: background-color 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      
+      .modern-table tbody tr:hover {
+        background-color: #f8fafc;
+      }
+      
+      .modern-table tbody td {
+        padding: 1.25rem 1.5rem;
+        color: #334155;
+        font-size: 0.9rem;
+      }
+      
+      .modern-table tbody tr:last-child {
+        border-bottom: none;
+      }
+      
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      
+      .badge-success {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+      
+      .badge-info {
+        background-color: #dbeafe;
+        color: #1e40af;
+      }
+    </style>
+  </head>
+
+  <body class="flex flex-col min-h-screen overflow-x-hidden bg-gray-100">
+    <!-- SIDEBAR -->
+    <aside
+      id="sidebar"
+      class="fixed top-0 left-0 z-50 w-64 h-full bg-blue-700 shadow-2xl sidebar sidebar-closed"
+    >
+      <div class="flex flex-col h-full">
+        <div
+          class="flex items-center justify-between p-4 border-b border-blue-600"
+        >
+          <h2 class="text-xl font-bold text-white font-audiowide">
+            Admin Dashboard
+          </h2>
+          <button id="closeSidebar" class="text-white hover:text-gray-200">
+            ✕
+          </button>
+        </div>
+
+        <nav class="flex-1 p-4 overflow-y-auto">
+          <ul class="space-y-2">
+            <li>
+              <a
+                href="{% url 'Homepage' %}"
+                class="flex items-center p-3 text-white rounded-lg hover:bg-blue-600"
+                ><i class="mr-3 fas fa-home"></i> Home</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'Adminloanslist' %}"
+                class="flex items-center p-3 text-white rounded-lg hover:bg-blue-600"
+                ><i class="mr-3 fas fa-hand-holding-usd"></i> Loans</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'Adminpayment' %}"
+                class="flex items-center p-3 text-lg font-bold text-yellow-200 rounded-lg hover:bg-blue-600"
+                ><i class="mr-3 fas fa-credit-card"></i> Payments</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'Adminborrower' %}"
+                class="flex items-center p-3 text-white rounded-lg hover:bg-blue-600"
+                ><i class="mr-3 fas fa-users"></i> Borrowers</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'AdminEbike' %}"
+                class="flex items-center p-3 text-white rounded-lg hover:bg-blue-600"
+                ><i class="mr-3 fas fa-bicycle"></i> Ebike Models</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <div class="p-4 border-t border-blue-600">
+          <a
+            href="{% url 'index' %}"
+            class="flex items-center p-3 text-white rounded-lg hover:bg-blue-600"
+            ><i class="mr-3 fas fa-sign-out-alt"></i> Logout</a
+          >
+        </div>
+      </div>
+    </aside>
+
+    <div
+      id="overlay"
+      class="fixed inset-0 z-40 hidden bg-opacity-40"
+      style="display: none"
+    ></div>
+
+    <!-- HEADER -->
+    <header
+      class="w-full px-4 py-3 text-white bg-blue-600 shadow-lg font-audiowide"
+    >
+      <div class="flex items-center">
+        <button id="hamburger" class="text-2xl text-white hover:text-gray-300">
+          ☰
+        </button>
+        <img
+          src="{% static 'images/logo.png' %}"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          class="h-8 ml-3"
+        />
+        <span class="hidden ml-2 text-xl font-bold">ECODRIVE</span>
+        <i
+          class="ml-auto text-2xl cursor-pointer fas fa-user-circle hover:text-gray-300"
+        ></i>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="px-6 py-6">
+      <h1 class="mb-4 text-2xl font-bold text-gray-700">Payment List</h1>
+
+      <button
+        id="openpaymentModalButton"
+        class="flex items-center gap-2 px-5 py-2 mb-4 font-bold text-white bg-blue-500 rounded-lg shadow hover:bg-blue-600"
+      >
+        <i class="text-xl fas fa-plus-circle"></i>
+        New Payment
+      </button>
+
+      <div class="p-4 bg-white shadow rounded-xl">
+        <div
+          class="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between"
+        >
+          <div class="flex items-center gap-2 text-gray-700">
+            <span class="font-semibold">Show</span>
+            <select class="px-2 py-1 border border-gray-500 rounded">
+              <option>1</option>
+              <option>5</option>
+              <option>10</option>
+            </select>
+            <span class="font-semibold">entries</span>
+          </div>
+
+          <div class="relative flex items-center gap-2">
+            <label class="font-semibold text-gray-700">Search:</label>
+            <div class="relative">
+              <input
+                type="text"
+                class="w-40 py-1 pl-3 pr-3 text-black border rounded focus:ring focus:ring-blue-300"
+                placeholder="Search..."
+              />
+              <i
+                class="absolute text-gray-500 -translate-y-1/2 fas fa-search right-3 top-1/2"
+              ></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full modern-table">
+            <thead>
+              <tr>
+                <th class="text-left">#</th>
+                <th class="text-left">Loan Reference No.</th>
+                <th class="text-left">Date</th>
+                <th class="text-left">Payer</th>
+                <th class="text-left">Amount</th>
+                <th class="text-left">Penalty</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for payment in payments %}
+              <tr>
+                <td class="font-medium text-gray-500">{{ forloop.counter }}</td>
+                <td class="font-medium text-gray-500">{{ payment.loan.loan_id }}</td>
+                <td class="font-semibold text-gray-600">
+                  {{ payment.payment_date|date:"M d, Y" }}
+                </td>
+                <td class="font-medium text-gray-800">
+                  {{ payment.loan.borrower.full_name }}
+                </td>
+                <td class="font-semibold text-green-600">₱{{ payment.amount|floatformat:2 }}</td>
+                <td class="font-medium text-gray-500">₱0.00</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-gray-500">No payments found</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between mt-3">
+          <p class="text-sm font-semibold text-gray-600">
+            Showing 0 to 0 of 0 entries
+          </p>
+
+          <div class="flex items-center gap-1">
+            <button
+              class="px-3 py-1 text-black bg-gray-100 border rounded hover:bg-gray-300"
+            >
+              Previous
+            </button>
+            <button class="px-3 py-1 text-white bg-blue-600 border rounded">
+              1
+            </button>
+            <button
+              class="px-3 py-1 text-black bg-gray-100 border rounded hover:bg-gray-300"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- PAYMENT MODAL -->
+    <div
+      id="paymentModal"
+      class="fixed inset-0 z-[999] flex items-center justify-center bg-opacity-40 drop-shadow-2xl hidden"
+    >
+      <div
+        class="bg-white w-[90%] max-w-3xl rounded-lg shadow-xl overflow-hidden"
+      >
+        <div
+          class="flex items-center justify-between px-6 py-4 text-white bg-blue-600"
+        >
+          <h2 class="text-xl font-bold">Payment Form</h2>
+          <button id="closeModal" class="text-2xl">✕</button>
+        </div>
+
+        <div class="px-6 py-6 space-y-6">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label for="payment-loan" class="font-semibold text-gray-700">Select Loan</label>
+              <select
+                id="payment-loan"
+                name="payment_loan"
+                class="w-full px-3 py-2 mt-1 text-black border border-black rounded"
+              >
+                <option value="">Select a loan...</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="payment-type" class="font-semibold text-gray-700">Payment Type</label>
+              <select
+                id="payment-type"
+                name="payment_type"
+                class="w-full px-3 py-2 mt-1 text-black border border-black rounded"
+              >
+                <option value="CASH">Cash</option>
+                <option value="TRANSFER">Bank Transfer</option>
+                <option value="GCASH">GCash</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label for="payment-amount" class="font-semibold text-gray-700">Amount</label>
+              <input
+                type="number"
+                id="payment-amount"
+                name="payment_amount"
+                class="w-full px-3 py-2 mt-1 text-black border rounded"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            <div>
+              <label class="font-semibold text-gray-700">Remaining Balance</label>
+              <div class="w-full px-3 py-2 mt-1 text-lg font-bold text-gray-800 bg-gray-100 border border-gray-300 rounded">
+                <span id="remaining-balance">₱ 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-center gap-3 mt-6">
+            <button
+              class="px-5 py-2 text-gray-700 bg-gray-200 rounded-lg shadow-sm hover:bg-gray-300"
+              id="cancelForm"
+            >
+              Cancel
+            </button>
+            <button
+              id="savePaymentButton"
+              class="px-5 py-2 font-bold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div
+      id="success-modal"
+      class="hidden fixed inset-0 flex items-center justify-center z-[1100] p-4 bg-opacity-40"
+    >
+      <div
+        class="w-full max-w-sm p-8 text-center bg-white shadow-2xl rounded-2xl"
+      >
+        <div class="flex justify-center mb-6">
+          <div
+            id="success-icon-container"
+            class="flex items-center justify-center w-24 h-24 bg-green-100 rounded-full"
+          ></div>
+        </div>
+
+        <h2 id="success-title" class="mb-2 text-2xl font-bold text-gray-800">
+          Success!
+        </h2>
+        <p id="success-message" class="mb-8 text-lg text-gray-600">
+          The action was completed successfully.
+        </p>
+
+        <button
+          id="success-ok-button"
+          class="w-full py-3 font-semibold text-white bg-green-500 rounded-lg shadow-md hover:bg-green-600"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Wait for DOM to be ready
+      function initPaymentForm() {
+        /* SIDEBAR */
+        const hamburger = document.getElementById("hamburger");
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+        const closeSidebar = document.getElementById("closeSidebar");
+
+        if (hamburger && sidebar && overlay && closeSidebar) {
+          function openSidebar() {
+            sidebar.classList.remove("sidebar-closed");
+            sidebar.classList.add("sidebar-open");
+            overlay.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+          }
+
+          function closeSidebarFunc() {
+            sidebar.classList.add("sidebar-closed");
+            sidebar.classList.remove("sidebar-open");
+            overlay.classList.add("hidden");
+            document.body.style.overflow = "";
+          }
+
+          hamburger.addEventListener("click", openSidebar);
+          closeSidebar.addEventListener("click", closeSidebarFunc);
+          overlay.addEventListener("click", closeSidebarFunc);
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeSidebarFunc();
+          });
+        }
+
+        /* PAYMENT MODAL */
+        const paymentModal = document.getElementById("paymentModal");
+        const openpaymentModalButton = document.getElementById(
+          "openpaymentModalButton"
+        );
+        const closeModalButton = document.getElementById("closeModal");
+        const cancelForm = document.getElementById("cancelForm");
+        const paymentLoanSelect = document.getElementById("payment-loan");
+        const remainingBalanceDisplay = document.getElementById("remaining-balance");
+        let loansData = {}; // Store loans data for reference
+
+        if (!paymentModal || !openpaymentModalButton || !closeModalButton || !cancelForm || !paymentLoanSelect || !remainingBalanceDisplay) {
+          console.error('Required payment form elements not found');
+          return;
+        }
+
+        openpaymentModalButton.addEventListener("click", async () => {
+          console.log('New Payment button clicked');
+          // Load loans into dropdown when modal opens
+          try {
+            console.log('Fetching loans for payment form');
+            const response = await fetch("/api/loans/", {
+              headers: {
+                'Accept': 'application/json',
+              },
+              credentials: 'same-origin'
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Loans response:', data);
+            console.log('Response type:', typeof data);
+            console.log('Is array:', Array.isArray(data));
+            
+            paymentLoanSelect.innerHTML = '<option value="">Select a loan...</option>';
+            
+            // Handle both paginated response and direct array response
+            let loansArray = [];
+            if (Array.isArray(data)) {
+              loansArray = data;
+              console.log('Response is an array');
+            } else if (data.results && Array.isArray(data.results)) {
+              loansArray = data.results;
+              console.log('Response has results array');
+            } else if (data.data && Array.isArray(data.data)) {
+              loansArray = data.data;
+              console.log('Response has data array');
+            } else {
+              console.log('Could not find loans in response');
+              console.log('Response keys:', Object.keys(data));
+            }
+            
+            // Filter to show only loans that are not completed or overdue
+            const availableLoans = loansArray.filter(loan => loan.status !== 'COMPLETED' && loan.status !== 'OVERDUE');
+            console.log('Total loans:', loansArray.length);
+            console.log('Available loans for payment:', availableLoans.length);
+            console.log('All loans:', loansArray);
+            
+            if (availableLoans.length === 0) {
+              paymentLoanSelect.innerHTML = '<option value="">No loans available for payment</option>';
+              remainingBalanceDisplay.textContent = '₱ 0.00';
+              paymentModal.classList.remove("hidden");
+              return;
+            }
+
+            availableLoans.forEach(loan => {
+              const option = document.createElement('option');
+              option.value = loan.id;
+              const borrowerName = `${loan.borrower.first_name} ${loan.borrower.last_name}`;
+              option.textContent = `${loan.loan_id} - ${borrowerName} (₱${parseFloat(loan.remaining_balance).toFixed(2)})`;
+              paymentLoanSelect.appendChild(option);
+              
+              // Store loan data for quick access
+              loansData[loan.id] = {
+                loan_id: loan.loan_id,
+                borrower_name: borrowerName,
+                remaining_balance: loan.remaining_balance,
+                amount: loan.amount,
+                monthly_payment: loan.monthly_payment
+              };
+            });
+            
+          } catch (error) {
+            console.error('Error loading loans:', error);
+            paymentLoanSelect.innerHTML = '<option value="">Error loading loans</option>';
+          }
+          paymentModal.classList.remove("hidden");
+        });
+
+        // Show remaining balance when loan is selected and auto-fill amount
+        paymentLoanSelect.addEventListener("change", () => {
+          const loanId = paymentLoanSelect.value;
+          const paymentAmountInput = document.getElementById("payment-amount");
+          if (loanId && loansData[loanId]) {
+            const remainingBalance = parseFloat(loansData[loanId].remaining_balance).toFixed(2);
+            const monthlyPayment = parseFloat(loansData[loanId].monthly_payment).toFixed(2);
+            remainingBalanceDisplay.textContent = `₱ ${remainingBalance}`;
+            paymentAmountInput.value = monthlyPayment;
+            console.log(`Loan selected: ${loansData[loanId].loan_id}, Monthly Payment: ₱${monthlyPayment}, Remaining: ₱${remainingBalance}`);
+          } else {
+            remainingBalanceDisplay.textContent = '₱ 0.00';
+            paymentAmountInput.value = '';
+          }
+        });
+
+        closeModalButton.addEventListener("click", () => {
+          console.log('Close modal button clicked');
+          paymentModal.classList.add("hidden");
+        });
+        
+        cancelForm.addEventListener("click", () => {
+          console.log('Cancel button clicked');
+          paymentModal.classList.add("hidden");
+        });
+
+        /* SUCCESS MODAL */
+        const successModal = document.getElementById("success-modal");
+        const successOkButton = document.getElementById("success-ok-button");
+        const successTitle = document.getElementById("success-title");
+        const successMessage = document.getElementById("success-message");
+        const successIconContainer = document.getElementById(
+          "success-icon-container"
+        );
+
+        if (successModal && successOkButton && successTitle && successMessage && successIconContainer) {
+          const showSuccessModal = (title, msg, iconHtml) => {
+            successTitle.textContent = title;
+            successMessage.textContent = msg;
+            successIconContainer.innerHTML = iconHtml;
+            successModal.classList.remove("hidden");
+          };
+
+          successOkButton.addEventListener("click", () => {
+            console.log('Success OK button clicked');
+            successModal.classList.add("hidden");
+          });
+
+          /* SAVE BUTTON → SHOW SUCCESS MODAL */
+          const savePaymentButton = document.getElementById("savePaymentButton");
+          if (savePaymentButton) {
+            savePaymentButton.addEventListener("click", async () => {
+              console.log('Save Payment button clicked');
+              const loanId = parseInt(document.getElementById("payment-loan").value);
+              const amount = document.getElementById("payment-amount").value;
+              const paymentType = document.getElementById("payment-type").value;
+
+              if (!loanId || isNaN(loanId) || !amount) {
+                alert("Please fill in all required fields");
+                return;
+              }
+
+              const paymentAmount = parseFloat(amount);
+              const remainingBalance = parseFloat(loansData[loanId]?.remaining_balance || 0);
+
+              if (paymentAmount > remainingBalance) {
+                alert(`Payment amount (₱${paymentAmount.toFixed(2)}) cannot exceed remaining balance (₱${remainingBalance.toFixed(2)})`);
+                return;
+              }
+
+              if (paymentAmount <= 0) {
+                alert("Payment amount must be greater than 0");
+                return;
+              }
+
+              try {
+                console.log('Sending payment:', { loan_id: loanId, amount: paymentAmount, payment_type: paymentType });
+                
+                const response = await fetch("/api/add-payment/", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                  },
+                  credentials: 'same-origin',
+                  body: JSON.stringify({
+                    loan_id: loanId,
+                    amount: paymentAmount,
+                    payment_type: paymentType
+                  })
+                });
+
+                console.log('Payment response status:', response.status);
+                const data = await response.json();
+                console.log('Payment response data:', data);
+
+                if (!response.ok) {
+                  throw new Error(data.message || `HTTP ${response.status}`);
+                }
+
+                if (data.status === 'success') {
+                  const newRemainingBalance = parseFloat(data.loan_remaining_balance).toFixed(2);
+                  
+                  document.getElementById("payment-loan").value = '';
+                  document.getElementById("payment-amount").value = '';
+                  
+                  paymentModal.classList.add("hidden");
+                  showSuccessModal(
+                    "Payment Recorded!",
+                    `Payment recorded successfully. Loan ${loansData[loanId]?.loan_id}: New remaining balance is ₱${newRemainingBalance}`,
+                    `<svg class="w-16 h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+                  );
+                  
+                  // Reload page after 2 seconds to refresh loan list and statistics
+                  setTimeout(() => {
+                    console.log('Reloading page to refresh loan data...');
+                    location.reload();
+                  }, 2000);
+                } else {
+                  alert('Error: ' + (data.message || 'Failed to save payment'));
+                }
+              } catch (error) {
+                console.error('Error saving payment:', error);
+                alert('Error saving payment: ' + error.message);
+              }
+            });
+          }
+        }
+      }
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        console.log('DOM loading, waiting for DOMContentLoaded');
+        document.addEventListener('DOMContentLoaded', () => {
+          console.log('DOMContentLoaded fired, initializing payment form');
+          initPaymentForm();
+        });
+      } else {
+        console.log('DOM already loaded, initializing payment form immediately');
+        initPaymentForm();
+      }
+    </script>
+  </body>
+</html>

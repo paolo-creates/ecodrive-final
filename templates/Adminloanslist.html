@@ -1,0 +1,950 @@
+{% load static %}
+{% load custom_filters %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoDrive Admin Loans</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{% static 'dist/output.css' %}">
+
+    <!-- Font Awesome Icons -->
+    <script
+      src="https://kit.fontawesome.com/414b0df42d.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Google Fonts - Audiowide -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Custom font class for Audiowide */
+      .font-audiowide {
+        font-family: "Audiowide", sans-serif;
+      }
+
+      /* Sidebar animation styles */
+      .sidebar {
+        transition: transform 0.3s ease-in-out;
+      }
+      .sidebar-open {
+        transform: translateX(0);
+      }
+      .sidebar-closed {
+        transform: translateX(-100%);
+      }
+
+      /* Filter tab styles */
+      .filter-tab {
+        transition: all 0.2s ease;
+      }
+      .filter-tab.active {
+        background-color: #2563eb;
+        color: white;
+        font-weight: 600;
+      }
+
+      /* Modern Table Styling */
+      .modern-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+        width: 100%;
+      }
+      
+      /* Column width control */
+      .modern-table thead th:first-child,
+      .modern-table tbody td:first-child {
+        width: 60px;
+      }
+      
+      .modern-table thead th {
+        background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #475569;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      
+      .modern-table tbody tr {
+        transition: background-color 0.2s ease;
+        border-bottom: 4px solid #64748b;
+      }
+      
+      .modern-table tbody tr:hover {
+        background-color: #f8fafc;
+      }
+      
+      .modern-table tbody td {
+        padding: 1.25rem 1.5rem;
+        color: #334155;
+        font-size: 0.9rem;
+      }
+      
+      .modern-table tbody tr:last-child {
+        border-bottom: none;
+      }
+    </style>
+  </head>
+
+  <body class="flex flex-col min-h-screen overflow-x-hidden bg-gray-100">
+    <!-- ========== SIDEBAR ========== -->
+    <aside
+      id="sidebar"
+      class="fixed top-0 left-0 z-50 w-64 h-full bg-blue-700 shadow-2xl sidebar sidebar-closed"
+    >
+      <div class="flex flex-col h-full">
+        <!-- Sidebar Header -->
+        <div
+          class="flex items-center justify-between p-4 border-b border-blue-600"
+        >
+          <h2 class="text-xl font-bold text-white font-audiowide">
+            Admin Dashboard
+          </h2>
+          <button id="closeSidebar" class="text-white hover:text-gray-200">
+            ✕
+          </button>
+        </div>
+
+        <!-- Sidebar Navigation Links -->
+        <nav class="flex-1 p-4 overflow-y-auto">
+          <ul class="space-y-2">
+            <!-- Home Link -->
+            <li>
+              <a
+                href="{% url 'Homepage' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-home"></i> Home
+              </a>
+            </li>
+
+            <!-- Loans Link (Active) -->
+            <li>
+              <a
+                href="{% url 'Adminloanslist' %}"
+                class="flex items-center p-3 text-lg font-bold text-yellow-200 transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-hand-holding-usd"></i> Loans
+              </a>
+            </li>
+
+            <!-- Payments Link -->
+            <li>
+              <a
+                href="{% url 'Adminpayment' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-credit-card"></i> Payments
+              </a>
+            </li>
+
+            <!-- Borrowers Link -->
+            <li>
+              <a
+                href="{% url 'Adminborrower' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-users"></i> Borrowers
+              </a>
+            </li>
+
+            <!-- Ebike Models Link -->
+            <li>
+              <a
+                href="{% url 'AdminEbike' %}"
+                class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+              >
+                <i class="mr-3 fas fa-bicycle"></i> Ebike Models
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+
+        <!-- Sidebar Footer - Logout -->
+        <div class="p-4 border-t border-blue-600">
+          <a
+            href="{% url 'index' %}"
+            class="flex items-center p-3 text-white transition rounded-lg hover:bg-blue-600"
+          >
+            <i class="mr-3 fas fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div
+      id="overlay"
+      class="fixed inset-0 z-40 hidden bg-opacity-40"
+      style="display: none"
+    ></div>
+
+    <!-- ========== HEADER ========== -->
+    <header
+      class="w-full px-4 py-3 text-white bg-blue-600 shadow-lg font-audiowide"
+    >
+      <div class="flex items-center">
+        <!-- Hamburger Menu Button -->
+        <button id="hamburger" class="text-2xl text-white hover:text-gray-300">
+          ☰
+        </button>
+
+        <!-- Logo -->
+        <img
+          src="{% static 'images/logo.png' %}"
+          onerror="
+            this.style.display = 'none';
+            this.nextElementSibling.style.display = 'block';
+          "
+          class="h-8 ml-3"
+        />
+        <!-- Fallback text if logo fails to load -->
+        <span class="hidden ml-2 text-xl font-bold">ECODRIVE</span>
+
+        <!-- User Profile Icon -->
+        <i
+          class="ml-auto text-2xl cursor-pointer fas fa-user-circle hover:text-gray-300"
+        ></i>
+      </div>
+    </header>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="px-4 py-6 sm:px-6">
+      <!-- Page Title and Summary Stats -->
+      <div
+        class="flex flex-col items-start justify-between gap-4 mb-6 sm:flex-row sm:items-center"
+      >
+        <h1 class="text-2xl font-bold text-gray-700">Loan List</h1>
+
+        <!-- Summary Statistics -->
+        <div class="flex flex-wrap gap-3 text-sm">
+          <!-- This Month Total -->
+          <div
+            class="flex items-center gap-2 px-3 py-1 bg-white rounded-lg shadow-sm"
+          >
+            <i class="text-blue-600 fas fa-calendar-alt"></i>
+            <span class="font-semibold text-gray-700">This Month Releases:</span>
+            <span class="font-bold text-blue-600">₱{{ total_releases|floatformat:2 }}</span>
+          </div>
+
+          <!-- Collections Total -->
+          <div
+            class="flex items-center gap-2 px-3 py-1 bg-white rounded-lg shadow-sm"
+          >
+            <i class="text-green-600 fas fa-coins"></i>
+            <span class="font-semibold text-gray-700">This Month Collections:</span>
+            <span class="font-bold text-green-600">₱{{ total_collections|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create New Loan Button -->
+      <button
+        id="openLoanModalButton"
+        class="flex items-center gap-2 px-5 py-2 mb-4 font-bold text-white bg-blue-500 rounded-lg shadow hover:bg-blue-600"
+      >
+        <i class="text-xl fas fa-plus-circle"></i>
+        Create new Loan Application
+      </button>
+
+      <!-- Main Content Container -->
+      <div class="p-4 bg-white shadow rounded-xl">
+        <!-- ========== FILTER TABS ========== -->
+        <div class="mb-4 overflow-x-auto">
+          <div class="flex gap-2 pb-2 min-w-max">
+            <!-- All Loans Tab -->
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg filter-tab active hover:bg-gray-200"
+              data-filter="all"
+            >
+              <i class="mr-1 fas fa-list"></i>
+              All Loans
+            </button>
+
+            <!-- Active Loans Tab -->
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg filter-tab hover:bg-gray-200"
+              data-filter="active"
+            >
+              <i class="mr-1 fas fa-check-circle"></i>
+              Active
+            </button>
+
+            <!-- Overdue Loans Tab -->
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg filter-tab hover:bg-gray-200"
+              data-filter="overdue"
+            >
+              <i class="mr-1 fas fa-exclamation-triangle"></i>
+              Overdue
+              <span
+                class="ml-1 px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full"
+                >2</span
+              >
+            </button>
+
+            <!-- Completed Loans Tab -->
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg filter-tab hover:bg-gray-200"
+              data-filter="completed"
+            >
+              <i class="mr-1 fas fa-flag-checkered"></i>
+              Completed
+            </button>
+
+            <!-- Monthly Releases Tab -->
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg filter-tab hover:bg-gray-200"
+              data-filter="monthly-releases"
+            >
+              <i class="mr-1 fas fa-calendar-check"></i>
+              Monthly Releases
+            </button>
+
+            <!-- Monthly Collections Tab -->
+            <button
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg filter-tab hover:bg-gray-200"
+              data-filter="monthly-collections"
+            >
+              <i class="mr-1 fas fa-hand-holding-usd"></i>
+              Monthly Collections
+            </button>
+          </div>
+        </div>
+
+        <!-- ========== TABLE CONTROLS ========== -->
+        <div
+          class="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between"
+        >
+          <!-- Entries Per Page Selector -->
+          <div class="flex items-center gap-2 text-gray-700">
+            <span class="font-semibold">Show</span>
+            <select class="px-2 py-1 border border-gray-500 rounded">
+              <option>1</option>
+              <option>5</option>
+              <option>10</option>
+            </select>
+            <span class="font-semibold">entries</span>
+          </div>
+
+          <!-- Search Box -->
+          <div class="relative flex items-center gap-2">
+            <label class="font-semibold text-gray-700">Search:</label>
+            <div class="relative">
+              <input
+                type="text"
+                class="w-40 py-1 pl-3 pr-3 text-black border rounded focus:ring focus:ring-blue-300"
+                placeholder="Search..."
+              />
+              <i
+                class="absolute text-gray-500 -translate-y-1/2 fas fa-search right-3 top-1/2"
+              ></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========== LOAN TABLE ========== -->
+        <div id="loan-table-container" class="overflow-x-auto">
+          <table class="min-w-full modern-table">
+            <!-- Table Header -->
+            <thead>
+              <tr>
+                <th class="text-left">#</th>
+                <th class="text-left">Borrower</th>
+                <th class="text-left">Loan Details</th>
+                <th class="text-left">Payment Details</th>
+                <th class="text-left">Unit</th>
+                <th class="text-left">Status</th>
+                <th class="text-left">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for loan in loans %}
+              <tr
+                class="font-semibold text-black loan-row"
+                data-status="{{ loan.status|lower }}"
+              >
+                <!-- Row Number -->
+                <td class="align-top">{{ forloop.counter }}</td>
+
+                <!-- Borrower Information -->
+                <td class="space-y-5 align-top">
+                  <h1>
+                    Name: <span class="font-bold">{{ loan.borrower.full_name }}</span>
+                  </h1>
+                  <h1>Contact: <span class="font-bold">{{ loan.borrower.mobile_number }}</span></h1>
+                  <h1>
+                    Address: <span class="font-bold">{{ loan.borrower.address }}</span>
+                  </h1>
+                </td>
+
+                <!-- Loan Details -->
+                <td class="space-y-5 align-top">
+                  <h1>Reference no: <span class="font-bold">{{ loan.loan_id }}</span></h1>
+                  <h1>Loan Plan: <span class="font-bold">{{ loan.term }} months</span></h1>
+                  <h1>Amount: <span class="font-bold">₱{{ loan.amount|floatformat:2 }}</span></h1>
+                  {% if loan.release_details %}
+                  <h1>
+                    Down Payment: <span class="font-bold">₱{{ loan.release_details.down_payment|floatformat:2 }}</span>
+                  </h1>
+                  {% with total_amount=loan.amount|add:loan.release_details.down_payment %}
+                  <h1>
+                    Total Amount: <span class="font-bold">₱{{ total_amount|floatformat:2 }}</span>
+                  </h1>
+                  {% endwith %}
+                  {% endif %}
+                  <h1>
+                    Monthly Amount: <span class="font-bold">₱{{ loan.monthly_payment|floatformat:2 }}</span>
+                  </h1>
+                  <h1>Remaining Balance: <span class="font-bold">₱{{ loan.remaining_balance|floatformat:2 }}</span></h1>
+                  {% if loan.release_details %}
+                  <h1>
+                    Date Released: <span class="font-bold">{{ loan.release_details.date_released|date:"M d, Y" }}</span>
+                  </h1>
+                  {% endif %}
+                </td>
+
+                <!-- Payment Details -->
+                <td class="space-y-5 align-top">
+                  <h1>
+                    Next Payment Date:
+                    <span class="font-bold {% if loan.is_overdue %}text-red-600{% endif %}">{{ loan.next_payment_date|date:"M d, Y" }}</span>
+                  </h1>
+                  <h1>Amount: <span class="font-bold">₱{{ loan.monthly_payment|floatformat:2 }}</span></h1>
+                  <h1>Penalty: <span class="font-bold">₱0.00</span></h1>
+                  <h1>
+                    Payable Amount: <span class="font-bold">₱{{ loan.monthly_payment|floatformat:2 }}</span>
+                  </h1>
+                </td>
+
+                <!-- Unit Model -->
+                {% if loan.ebike_model %}
+                <td class="font-bold align-top">{{ loan.ebike_model.name }}</td>
+                {% else %}
+                <td class="font-bold align-top">N/A</td>
+                {% endif %}
+
+                <!-- Status Badge -->
+                <td class="align-top">
+                  {% if loan.status == 'ACTIVE' %}
+                  <span class="px-3 py-1 text-sm font-bold text-blue-700 bg-blue-100 rounded-full">Active</span>
+                  {% elif loan.status == 'OVERDUE' %}
+                  <span class="px-3 py-1 text-sm font-bold text-red-700 bg-red-100 rounded-full">Overdue</span>
+                  {% elif loan.status == 'COMPLETED' %}
+                  <span class="px-3 py-1 text-sm font-bold text-green-700 bg-green-100 rounded-full">Completed</span>
+                  {% endif %}
+                </td>
+
+                <!-- Action Button -->
+                <td class="align-top">
+                  {% if loan.status == 'COMPLETED' %}
+                  <button
+                    class="w-full p-2 font-bold text-white bg-gray-400 rounded-lg cursor-not-allowed"
+                    disabled
+                  >
+                    Loan Completed
+                  </button>
+                  {% else %}
+                  <button
+                    class="w-full p-2 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-600 viewPaymentScheduleBtn"
+                    data-loan-id="{{ loan.id }}"
+                  >
+                    View Payment Schedule
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center text-gray-500">No loans found</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ========== MONTHLY RELEASES VIEW ========== -->
+        <div id="monthly-releases-container" class="hidden">
+          <!-- Month Selector -->
+          <div class="mb-4">
+            <label class="mr-2 font-semibold text-gray-700"
+              >Select Month:</label
+            >
+            <select
+              id="monthSelector"
+              class="px-3 py-2 text-gray-700 border border-gray-500 rounded"
+            >
+              <option value="2025-01">January 2025</option>
+              <option value="2024-12">December 2024</option>
+              <option value="2024-11">November 2024</option>
+            </select>
+          </div>
+
+          <!-- Summary Card -->
+          <div class="p-4 mb-4 rounded-lg bg-blue-50">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-gray-700">
+                  Total Loan Releases
+                </h3>
+                <p class="text-sm text-gray-600">{{ current_month|date:"F Y" }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-3xl font-bold text-blue-600">₱{{ total_releases|floatformat:2 }}</p>
+                <p class="text-sm text-gray-600">{{ monthly_releases|length }} loans released</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Releases Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full modern-table">
+              <thead>
+                <tr>
+                  <th class="text-left">#</th>
+                  <th class="text-left">Reference No.</th>
+                  <th class="text-left">Borrower</th>
+                  <th class="text-left">Loan Amount</th>
+                  <th class="text-left">Date Released</th>
+                  <th class="text-left">Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for release in monthly_releases %}
+                <tr class="font-semibold text-black">
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ release.loan.loan_id }}</td>
+                  <td>{{ release.loan.borrower.full_name }}</td>
+                  <td>₱{{ release.loan.ebike_model.srp|floatformat:2 }}</td>
+                  <td>{{ release.date_released|date:"M d, Y" }}</td>
+                  <td>{{ release.loan.ebike_model.name }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-gray-500">No releases found</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ========== MONTHLY COLLECTIONS VIEW ========== -->
+        <div id="monthly-collections-container" class="hidden">
+          <!-- Month Selector -->
+          <div class="mb-4">
+            <label class="mr-2 font-semibold text-gray-700"
+              >Select Month:</label
+            >
+            <select
+              id="collectionsMonthSelector"
+              class="px-3 py-2 text-gray-700 border border-gray-500 rounded"
+            >
+              <option value="2025-01">January 2025</option>
+              <option value="2024-12">December 2024</option>
+              <option value="2024-11">November 2024</option>
+            </select>
+          </div>
+
+          <!-- Summary Card -->
+          <div class="p-4 mb-4 rounded-lg bg-green-50">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-gray-700">
+                  Total Collections
+                </h3>
+                <p class="text-sm text-gray-600">{{ current_month|date:"F Y" }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-3xl font-bold text-green-600">₱{{ total_collections|floatformat:2 }}</p>
+                <p class="text-sm text-gray-600">{{ collections_count }} payments received</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Collections Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full modern-table">
+              <thead>
+                <tr>
+                  <th class="text-left">#</th>
+                  <th class="text-left">Reference No.</th>
+                  <th class="text-left">Borrower</th>
+                  <th class="text-left">Payment Date</th>
+                  <th class="text-left">Amount Paid</th>
+                  <th class="text-left">Payment Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for collection in monthly_collections %}
+                <tr class="font-semibold text-black">
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ collection.payment.loan.loan_id }}</td>
+                  <td>{{ collection.borrower.full_name }}</td>
+                  <td>{{ collection.payment.payment_date|date:"M d, Y" }}</td>
+                  <td>₱{{ collection.amount|floatformat:2 }}</td>
+                  <td>
+                    {% if collection.payment_type == 'CASH' %}
+                    <span class="px-2 py-1 text-xs font-bold text-blue-700 bg-blue-100 rounded-full">Cash</span>
+                    {% elif collection.payment_type == 'TRANSFER' %}
+                    <span class="px-2 py-1 text-xs font-bold text-purple-700 bg-purple-100 rounded-full">Bank Transfer</span>
+                    {% elif collection.payment_type == 'GCASH' %}
+                    <span class="px-2 py-1 text-xs font-bold text-green-700 bg-green-100 rounded-full">GCash</span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs font-bold text-blue-700 bg-blue-100 rounded-full">{{ collection.payment_type }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-gray-500">No collections found</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table Footer Info -->
+        <p class="mt-3 text-sm font-semibold text-gray-600">
+          Showing 0 to 0 of 0 entries
+        </p>
+
+        <!-- ========== PAGINATION ========== -->
+        <div class="flex justify-end mt-3">
+          <div class="flex items-center gap-1">
+            <button
+              class="px-3 py-1 text-black bg-gray-100 border rounded hover:bg-gray-300"
+            >
+              Previous
+            </button>
+            <button class="px-3 py-1 text-white bg-blue-600 border rounded">
+              1
+            </button>
+            <button
+              class="px-3 py-1 text-black bg-gray-100 border rounded hover:bg-gray-300"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========== PAYMENT SCHEDULE MODAL ========== -->
+    <div
+      id="paymentScheduleModal"
+      class="hidden fixed inset-0 drop-shadow-2xl flex items-center justify-center z-[999] p-4 bg-opacity-40"
+    >
+      <div
+        class="bg-white w-[95%] max-w-lg rounded-lg shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+      >
+        <!-- Modal Header -->
+        <div
+          class="flex items-center justify-between flex-shrink-0 px-4 py-3 text-white bg-blue-600 sm:px-6"
+        >
+          <h2 class="text-xl font-bold">Amount to pay</h2>
+          <button
+            id="closePaymentScheduleModal"
+            class="text-2xl hover:text-gray-200"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Payment Schedule Table -->
+        <div class="flex-grow overflow-y-auto">
+          <table class="min-w-full text-sm border-collapse">
+            <thead
+              class="sticky top-0 text-gray-700 bg-gray-100 border-b border-gray-300"
+            >
+              <tr>
+                <th
+                  class="px-3 py-2 text-left font-semibold w-[100px] min-w-[100px]"
+                >
+                  Status
+                </th>
+                <th class="px-3 py-2 font-semibold text-left">Due Date</th>
+                <th class="px-3 py-2 font-semibold text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic rows will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== LOAN APPLICATION MODAL ========== -->
+    <div
+      id="loanModal"
+      class="fixed inset-0 z-[999] hidden drop-shadow-2xl flex items-center justify-center bg-opacity-40"
+    >
+      <div
+        class="bg-white w-[90%] max-w-3xl rounded-lg shadow-xl overflow-hidden"
+      >
+        <!-- Modal Header -->
+        <div
+          class="flex items-center justify-between px-6 py-4 text-white bg-blue-600"
+        >
+          <h2 class="text-xl font-bold">Loan Application</h2>
+          <button id="closeModal" class="text-2xl hover:text-gray-200">
+            ✕
+          </button>
+        </div>
+
+        <!-- Loan Application Form -->
+        <div class="px-6 py-6 space-y-6">
+          {% csrf_token %}
+          <!-- First Row: Borrower and Loan Plan -->
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <!-- Borrower Selector -->
+            <div>
+              <label for="loan-borrower" class="font-semibold text-gray-700">Borrower</label>
+              <select id="loan-borrower" name="loan_borrower" class="w-full px-3 py-2 mt-1 text-black border rounded">
+                <option value="">Loading borrowers...</option>
+              </select>
+            </div>
+
+            <!-- Loan Plan Selector -->
+            <div>
+              <label for="loan-term" class="font-semibold text-gray-700">Loan Plan (Months)</label>
+              <select id="loan-term" name="loan_term" class="w-full px-3 py-2 mt-1 text-black border rounded">
+                <option value="">Select loan term</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Loan Plan Details Display -->
+          <div id="loan-plan-details" class="hidden p-4 border border-blue-200 rounded bg-blue-50">
+            <h3 class="mb-2 font-semibold text-gray-800">Loan Plan Details</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="text-gray-600">Monthly Installment:</span>
+                <span class="font-bold text-gray-900" id="plan-interest-display">-</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Down Payment:</span>
+                <span class="font-bold text-gray-900" id="plan-penalty-display">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Second Row: Loan Amount and Unit -->
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+            <!-- Model Unit Selector -->
+            <div>
+              <label for="loan-unit" class="font-semibold text-gray-700">Model Unit</label>
+              <select id="loan-unit" name="loan_unit" class="w-full px-3 py-2 mt-1 text-black border rounded">
+                <option value="">Select Unit</option>
+              </select>
+            </div>
+            
+            <!-- Loan Amount Input -->
+            <div>
+              <label for="loan-amount" class="font-semibold text-gray-700">Loan Amount</label>
+              <input
+                id="loan-amount"
+                name="loan_amount"
+                type="number"
+                class="w-full px-3 py-2 mt-1 text-black border rounded"
+                step="0.01"
+                min="0"
+              />
+            </div>
+
+            
+          </div>
+
+          <!-- Calculate Button -->
+          <div class="flex justify-center">
+            <button
+              id="open-calc-modal"
+              class="px-6 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700"
+            >
+              Calculate Amount
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CALCULATION DETAILS MODAL ========== -->
+    <div
+      id="calculation-modal"
+      class="hidden fixed inset-0 drop-shadow-2xl flex items-center justify-center z-[1000] p-4 bg-opacity-40"
+    >
+      <div class="w-full max-w-sm p-6 bg-white shadow-2xl rounded-xl">
+        <!-- Modal Header -->
+        <div
+          class="flex items-center justify-between px-0 py-3 mb-4 text-gray-800 border-b border-gray-200"
+        >
+          <h2 class="text-xl font-bold">Calculation Details</h2>
+          <button
+            id="closeCalcModal"
+            class="text-2xl text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Calculation Details -->
+        <div class="space-y-4">
+          <!-- Total Payable Amount -->
+          <div class="flex items-center justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Total Payable Amount</span>
+            <span class="text-lg font-bold text-gray-900">₱ <span id="calc-total-payable">0.00</span></span>
+          </div>
+
+          <!-- Monthly Payable Amount -->
+          <div class="flex items-center justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Monthly Payable Amount</span>
+            <span class="text-lg font-bold text-gray-900">₱ <span id="calc-monthly-amount">0.00</span></span>
+          </div>
+
+          <!-- Penalty Amount -->
+          <div class="flex items-center justify-between py-2">
+            <span class="font-medium text-red-500">Penalty Amount (per month)</span>
+            <span class="text-lg font-bold text-red-500">₱ <span id="calc-penalty-amount">0.00</span></span>
+          </div>
+
+          <!-- First Payment Date -->
+          <div class="flex items-center justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">First Payment Due</span>
+            <span class="text-lg font-bold text-gray-900"><span id="calc-first-payment-date">-</span></span>
+          </div>
+
+          <!-- Loan Plan Details Section -->
+          <div class="py-4 border-t-2 border-gray-200">
+            <h3 class="mb-3 font-semibold text-gray-700">Loan Plan Details</h3>
+            <div class="p-3 space-y-2 border border-blue-200 rounded bg-blue-50">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Model Name:</span>
+                <span class="font-bold text-gray-900" id="calc-model-name">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Loan Term:</span>
+                <span class="font-bold text-gray-900" id="calc-loan-term">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Monthly Installment:</span>
+                <span class="font-bold text-gray-900">₱<span id="calc-monthly-installment">0.00</span></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Down Payment Required:</span>
+                <span class="font-bold text-gray-900">₱<span id="calc-down-payment">0.00</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end mt-8 space-x-3">
+          <!-- Cancel Button -->
+          <button
+            id="calc-cancel-button"
+            class="px-5 py-2 font-medium text-gray-700 transition duration-150 bg-gray-200 rounded-lg shadow-sm hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+
+          <!-- Apply Loan Button -->
+          <button
+            id="calc-apply-button"
+            class="px-5 py-2 font-medium text-white transition duration-150 bg-green-600 rounded-lg shadow-md hover:bg-green-700"
+          >
+            Apply Loan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SUCCESS MODAL ========== -->
+    <div
+      id="success-modal"
+      class="hidden fixed inset-0 flex items-center justify-center z-[1100] p-4 bg-opacity-40"
+    >
+      <div
+        class="w-full max-w-sm p-8 text-center bg-white shadow-2xl rounded-2xl"
+      >
+        <!-- Success Icon Container -->
+        <div class="flex justify-center mb-6">
+          <div
+            id="success-icon-container"
+            class="flex items-center justify-center w-24 h-24 bg-green-100 rounded-full"
+          ></div>
+        </div>
+
+        <!-- Success Title -->
+        <h2 id="success-title" class="mb-2 text-2xl font-bold text-gray-800">
+          Success!
+        </h2>
+
+        <!-- Success Message -->
+        <p id="success-message" class="mb-8 text-lg text-gray-600">
+          The action was completed successfully.
+        </p>
+
+        <!-- OK Button -->
+        <button
+          id="success-ok-button"
+          class="w-full px-6 py-3 font-semibold text-white transition duration-150 bg-green-500 rounded-lg shadow-md hover:bg-green-600"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== ACTION MENU (CONTEXT MENU) ========== -->
+    <!-- This menu appears when clicking the paper plane icon in payment schedule -->
+    <div
+      id="actionMenu"
+      class="absolute hidden bg-white shadow-xl rounded-lg w-48 z-[1000] p-2 border border-gray-100 divide-y divide-gray-100"
+    >
+      <!-- Send SMS Button -->
+      <button
+        data-action="sms"
+        class="flex items-center w-full px-3 py-2 mb-2 text-sm font-semibold text-center text-white bg-blue-600 rounded-md action-button hover:bg-blue-700"
+      >
+        <i class="mr-2 fas fa-sms"></i>
+        Send SMS
+      </button>
+
+      <!-- Mark Overdue Button -->
+      <button
+        data-action="overdue"
+        class="flex items-center w-full px-3 py-2 mt-1 text-sm font-semibold text-left text-red-600 rounded-md hover:bg-red-50 action-button"
+      >
+        <i class="mr-2 fas fa-exclamation-triangle"></i>
+        Mark Overdue
+      </button>
+
+      <!-- Send Reminder Button -->
+      <button
+        data-action="reminder"
+        class="flex items-center w-full px-3 py-2 text-sm font-semibold text-left text-green-600 rounded-md hover:bg-green-50 action-button"
+      >
+        <i class="mr-2 fas fa-bell"></i>
+        Send Reminder
+      </button>
+    </div>
+
+    <!-- ========== JAVASCRIPT ========== -->
+    <!--<script src="{% static 'loanslist.js' %}"></script>-->
+    <script src="/static/loanslist.js"></script>
+  </body>
+</html>
